@@ -26,15 +26,15 @@ interface HALSONResource {
   ): I[];
   getEmbed<I, D>(rel: string, def: D): I | D;
   getEmbed<I, D>(rel: string, filterCallback: FilterCallback<I>, def: D): I | D;
-  addLink(rel: string, link: string | HALSONLink): HALSONResource & {_links: HALSONResourceLinks};
-  addEmbed<I>(rel: string, embed: I | readonly I[]): HALSONResource & {_embedded: EmbeddedHALSONResources};
+  addLink(rel: string, link: string | HALSONLink): this & {_links: HALSONResourceLinks};
+  addEmbed<I>(rel: string, embed: I | readonly I[]): this & {_embedded: EmbeddedHALSONResources};
   insertEmbed<I>(
     rel: string,
     index: number,
     embed: I | readonly I[],
-  ): HALSONResource & {_embedded: EmbeddedHALSONResources};
-  removeLinks(rel: string, filterCallback?: FilterCallback<HALSONLink>): HALSONResource;
-  removeEmbeds(rel: string, filterCallback?: FilterCallback<HALSONLink>): HALSONResource;
+  ): this & {_embedded: EmbeddedHALSONResources};
+  removeLinks(rel: string, filterCallback?: FilterCallback<HALSONLink>): this;
+  removeEmbeds(rel: string, filterCallback?: FilterCallback<HALSONLink>): this;
 }
 
 type EmbeddedHALSONResources = Partial<Record<string, HALSONResource | HALSONResource[]>>;
@@ -49,7 +49,6 @@ type HALSONResourceOf<T extends object> = HALSONResource & T;
 
 // Create a namespace to export the generic type
 declare namespace createHALSONResource {
-  export { HALSONResource };
   export type HALSONResource<T extends object = object> = HALSONResourceOf<T>;
 }
 
