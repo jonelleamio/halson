@@ -1,10 +1,10 @@
 # HALSON
 [![Build Status](https://travis-ci.org/seznam/halson.svg?branch=master)](https://travis-ci.org/seznam/halson)
 
-The [HAL+JSON](http://stateless.co/hal_specification.html) Resource Object.
+The [HAL+JSON](http://stateless.co/hal_specification.html) Resource Object with TypeScript support.
 
 ## Version
-3.0.0
+3.1.0
 
 ## Installation
 
@@ -52,6 +52,161 @@ console.log(resource.getEmbed('starred'));
 console.log(JSON.stringify(resource));
 ```
 
+## TypeScript Support
+
+HALSON supports TypeScript with generic typing for strongly-typed HAL+JSON resources. This allows you to work with your domain objects while preserving all HAL+JSON functionality.
+
+### Basic TypeScript Usage
+
+```typescript
+import halson from "halson";
+
+// Define your domain interface
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  isActive: boolean;
+}
+
+// Create a typed resource
+const userData: User = {
+  id: 1,
+  name: "John Doe",
+  email: "john@example.com",
+  isActive: true
+};
+
+// halson<T>() returns HALSONResource<T> which includes both
+// your domain properties AND all HAL+JSON methods
+const userResource = halson<User>(userData)
+  .addLink('self', '/users/1')
+  .addLink('edit', '/users/1/edit');
+
+// ✅ Fully typed access to your domain properties
+console.log(userResource.name);     // string
+console.log(userResource.isActive); // boolean
+
+// ✅ Plus all HAL+JSON functionality
+console.log(userResource.getLink('self')); // HALSONLink | undefined
+console.log(userResource.listLinkRels());  // string[]
+```
+
+### Import Patterns
+
+**Option 1: Import with namespace access**
+```typescript
+import halson from "halson";
+
+const resource = halson<User>(userData);
+type UserResource = halson.HALSONResource<User>;
+```
+
+**Option 2: Import with wildcard**
+```typescript
+import * as halson from "halson";
+
+const resource = halson<User>(userData);
+type UserResource = halson.HALSONResource<User>;
+```
+
+**Option 3: Type-only imports (recommended)**
+```typescript
+import halson from "halson";
+import type { HALSONResource } from "halson";
+
+const resource = halson<User>(userData);
+type UserResource = HALSONResource<User>;
+```
+
+### Working with Embedded Resources
+
+```typescript
+interface Repository {
+  id: number;
+  name: string;
+  language: string;
+  stars: number;
+}
+
+interface UserWithRepos {
+  id: number;
+  name: string;
+  email: string;
+}
+
+const userWithRepos = halson<UserWithRepos>({
+  id: 1,
+  name: "John Doe",
+  email: "john@example.com"
+})
+.addLink('self', '/users/1')
+.addEmbed('repositories', [
+  halson<Repository>({
+    id: 101,
+    name: "awesome-project",
+    language: "TypeScript",
+    stars: 42
+  }).addLink('self', '/repos/101'),
+  
+  halson<Repository>({
+    id: 102,
+    name: "another-project", 
+    language: "JavaScript",
+    stars: 23
+  }).addLink('self', '/repos/102')
+]);
+
+// ✅ Type-safe access to embedded resources
+const repos = userWithRepos.getEmbeds<Repository>('repositories');
+repos.forEach(repo => {
+  console.log(`${repo.name} (${repo.language}) - ${repo.stars} stars`);
+});
+```
+
+### Function Signatures
+
+```typescript
+// Generic function overloads
+function halson(data?: string | object): HALSONResource;
+function halson<T extends object>(data: string | T): HALSONResource<T>;
+
+// Generic type alias
+type HALSONResource<T extends object = object> = HALSONResource & T;
+```
+
+### Migration from JavaScript
+
+Existing JavaScript code works unchanged:
+
+```javascript
+// This JavaScript code continues to work exactly the same
+const resource = halson({
+  title: "Hello World",
+  count: 42
+});
+
+console.log(resource.title); // "Hello World"
+```
+
+When migrating to TypeScript, you can gradually add type annotations:
+
+```typescript
+// Step 1: Add interface
+interface Post {
+  title: string;
+  count: number;
+}
+
+// Step 2: Add generic type parameter
+const resource = halson<Post>({
+  title: "Hello World",
+  count: 42
+});
+
+// Now you get full type safety!
+console.log(resource.title); // ✅ TypeScript knows this is a string
+```
 
 ## API
 
