@@ -208,6 +208,163 @@ const resource = halson<Post>({
 console.log(resource.title); // ✅ TypeScript knows this is a string
 ```
 
+## Java HATEOAS-like Features
+
+HALSON now provides enterprise-grade HATEOAS features similar to Spring HATEOAS and other Java frameworks:
+
+### Enhanced Link Support with IANA Relations
+
+```typescript
+import halson from "halson";
+
+// Rich link objects with metadata
+const resource = halson<User>(userData)
+  .addLink(halson.IanaRels.SELF, {
+    href: "/users/1",
+    type: "application/json",
+    title: "User Profile",
+    method: "GET"
+  })
+  .addLink(halson.IanaRels.EDIT, {
+    href: "/users/1",
+    method: "PUT",
+    type: "application/json",
+    title: "Edit User"
+  });
+
+// Link existence checking
+if (resource.hasLink(halson.IanaRels.EDIT)) {
+  const editUrl = resource.getHref(halson.IanaRels.EDIT);
+}
+```
+
+### URI Template Support
+
+```typescript
+// Add templated links
+resource.addTemplate('search', '/users{?name,email,status}');
+
+// Expand templates with variables
+const searchUrl = resource.expandTemplate('search', {
+  name: 'John',
+  status: 'active'
+});
+// Result: "/users?name=John&status=active"
+```
+
+### Navigation & Traversal
+
+```typescript
+// Async navigation following links
+const userOrders = await userResource.follow<Order>('orders');
+const allRelated = await userResource.followAll<Resource>('related');
+
+// URL resolution
+const nextPageUrl = resource.resolve('next', { page: 2, size: 10 });
+```
+
+### Builder Pattern
+
+```typescript
+// Fluent resource construction
+const resource = halson.HALResourceBuilder<User>(userData)
+  .link(halson.IanaRels.SELF, '/users/1')
+  .link(halson.IanaRels.EDIT, {
+    href: '/users/1',
+    method: 'PUT',
+    type: 'application/json'
+  })
+  .template('search', '/users{?q}')
+  .curie('acme', 'https://api.acme.com/rels/{rel}', true)
+  .embed('profile', profileResource)
+  .build();
+```
+
+### Pagination Support
+
+```typescript
+interface UserList {
+  users: User[];
+}
+
+type PagedUsers = halson.PagedResource<UserList>;
+
+const pagedUsers: PagedUsers = {
+  users: [...],
+  page: {
+    number: 0,
+    size: 10,
+    totalElements: 100,
+    totalPages: 10
+  },
+  // HAL methods + pagination helpers
+  hasNext: () => true,
+  hasPrev: () => false,
+  next: () => '/users?page=1',
+  prev: () => null
+};
+```
+
+### Curie Support (Compact URIs)
+
+```typescript
+// Add namespace support
+resource
+  .addCurie('acme', 'https://api.acme.com/rels/{rel}', true)
+  .addLink('acme:orders', '/users/1/orders')
+  .addLink('acme:preferences', '/users/1/preferences');
+
+// Expand compact URIs
+const expandedRel = resource.expandCurie('acme:orders');
+// Result: "https://api.acme.com/rels/orders"
+```
+
+### Validation Framework
+
+```typescript
+// Validate resource structure
+const validation = resource.validate({
+  strict: true,
+  requireLinks: [halson.IanaRels.SELF],
+  allowMissingLinks: [halson.IanaRels.NEXT]
+});
+
+if (!validation.valid) {
+  console.error('Validation errors:', validation.errors);
+  console.warn('Validation warnings:', validation.warnings);
+}
+```
+
+### Content Negotiation
+
+```typescript
+// Built-in content negotiation helpers
+if (resource.accepts('application/json')) {
+  const json = resource.asJson();
+}
+
+const halJson = resource.asHal();
+const contentType = resource.getContentType();
+```
+
+### Available IANA Link Relations
+
+```typescript
+halson.IanaRels.SELF        // 'self'
+halson.IanaRels.EDIT        // 'edit' 
+halson.IanaRels.DELETE      // 'delete'
+halson.IanaRels.NEXT        // 'next'
+halson.IanaRels.PREV        // 'prev'
+halson.IanaRels.FIRST       // 'first'
+halson.IanaRels.LAST        // 'last'
+halson.IanaRels.RELATED     // 'related'
+halson.IanaRels.ALTERNATE   // 'alternate'
+halson.IanaRels.CANONICAL   // 'canonical'
+halson.IanaRels.COLLECTION  // 'collection'
+halson.IanaRels.ITEM        // 'item'
+// ... and more
+```
+
 ## API
 
 ### `halson([data])`
