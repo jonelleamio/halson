@@ -605,6 +605,6 @@ resource.removeLinks('starred', function(embed) {
 - Tom Ruttle <truttle@bmj.com>
 - David Kalosi <david.kalosi@gmail.com>
 - José Santos Martins Pereira
-- zerocool
+- [Jonelle Amio](https://github.com/jonelleamio)
 
 Thank you to all contributors who have helped improve HALSON!
