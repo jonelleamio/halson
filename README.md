@@ -596,3 +596,15 @@ resource.removeLinks('starred', function(embed) {
     return embed.getLink('self', {}).href === '/koajs/koa';
 });
 ```
+
+## Contributors
+
+- Marek Fojtl <jerrymf@gmail.com> (Author)
+- Martin Jurča <martin.jurca@firma.seznam.cz>
+- Juraj Hájovský <juraj@hajovsky.sk>
+- Tom Ruttle <truttle@bmj.com>
+- David Kalosi <david.kalosi@gmail.com>
+- José Santos Martins Pereira
+- zerocool
+
+Thank you to all contributors who have helped improve HALSON!
