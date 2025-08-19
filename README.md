@@ -212,6 +212,37 @@ console.log(resource.title); // ✅ TypeScript knows this is a string
 
 HALSON now provides enterprise-grade HATEOAS features similar to Spring HATEOAS and other Java frameworks:
 
+### Import Styles for Advanced Features
+
+You can use either namespace access or named imports for the advanced features:
+
+```typescript
+// Approach 1: Namespace access (all examples below use this)
+import halson from "halson";
+
+const resource = halson<User>(userData);
+type UserResource = halson.HALSONResource<User>;
+type PagedUsers = halson.PagedResource<UserList>;
+const validation = resource.validate(options);
+```
+
+```typescript
+// Approach 2: Named imports (alternative style)
+import halson, { 
+  HALSONResource, 
+  PagedResource, 
+  IanaRels,
+  ValidationOptions 
+} from "halson";
+
+const resource = halson<User>(userData);
+type UserResource = HALSONResource<User>;
+type PagedUsers = PagedResource<UserList>;
+const validation = resource.validate({
+  requireLinks: [IanaRels.SELF]
+});
+```
+
 ### Enhanced Link Support with IANA Relations
 
 ```typescript
@@ -322,7 +353,7 @@ const expandedRel = resource.expandCurie('acme:orders');
 ### Validation Framework
 
 ```typescript
-// Validate resource structure
+// Using namespace access
 const validation = resource.validate({
   strict: true,
   requireLinks: [halson.IanaRels.SELF],
@@ -333,6 +364,19 @@ if (!validation.valid) {
   console.error('Validation errors:', validation.errors);
   console.warn('Validation warnings:', validation.warnings);
 }
+```
+
+```typescript
+// Alternative: Using named imports
+import halson, { IanaRels, ValidationOptions } from "halson";
+
+const options: ValidationOptions = {
+  strict: true,
+  requireLinks: [IanaRels.SELF],
+  allowMissingLinks: [IanaRels.NEXT]
+};
+
+const validation = resource.validate(options);
 ```
 
 ### Content Negotiation
