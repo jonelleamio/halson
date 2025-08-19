@@ -43,7 +43,6 @@ interface URITemplateVariables {
   [key: string]: string | number | boolean | null | undefined;
 }
 
-// Phase 3: Pagination Support
 interface PageMetadata {
   number: number;
   size: number;
@@ -63,7 +62,6 @@ type PagedResource<T extends object = object> = HALSONResourceOf<T> & {
   last(): string | null;
 };
 
-// Phase 3: Builder Pattern
 interface HALResourceBuilder<T extends object> {
   link(rel: string, href: string): HALResourceBuilder<T>;
   link(rel: string, link: HALSONLink): HALResourceBuilder<T>;
@@ -76,14 +74,12 @@ interface HALResourceBuilder<T extends object> {
 
 declare function HALResourceBuilder<T extends object>(data: T): HALResourceBuilder<T>;
 
-// Phase 4: Curie Support (Compact URIs)
 interface CurieLink {
   name: string;
   href: string;
   templated: boolean;
 }
 
-// Phase 4: Content Negotiation & Integration
 interface ContentNegotiation {
   getContentType(): string;
   accepts(mediaType: string): boolean;
@@ -91,7 +87,6 @@ interface ContentNegotiation {
   asHal(): string;
 }
 
-// Phase 4: Validation Support
 interface ValidationOptions {
   strict?: boolean;
   allowMissingLinks?: string[];
@@ -135,28 +130,24 @@ interface HALSONResource extends ContentNegotiation {
   ): this & {_embedded: EmbeddedHALSONResources};
   removeLinks(rel: string, filterCallback?: FilterCallback<HALSONLink>): this;
   removeEmbeds(rel: string, filterCallback?: FilterCallback<HALSONLink>): this;
-  
-  // Phase 1: Enhanced Link Support
+
   hasLink(rel: string): boolean;
   hasLinks(rel: string): boolean;
   isTemplated(rel: string): boolean;
   expandTemplate(rel: string, variables: URITemplateVariables): string;
   addTemplate(rel: string, template: string, variables?: URITemplateVariables): this & {_links: HALSONResourceLinks};
-  
-  // Phase 2: Navigation & Traversal
+
   follow<T extends object = object>(rel: string, fetchOptions?: RequestInit): Promise<HALSONResourceOf<T>>;
   followAll<T extends object = object>(rel: string, fetchOptions?: RequestInit): Promise<HALSONResourceOf<T>[]>;
   getHref(rel: string): string | null;
   getAllHrefs(rel: string): string[];
   resolve(rel: string, variables?: URITemplateVariables): string | null;
-  
-  // Phase 4: Curie Support
+
   addCurie(curie: CurieLink): this;
   addCurie(name: string, href: string, templated?: boolean): this;
   getCuries(): CurieLink[];
   expandCurie(rel: string): string;
-  
-  // Phase 4: Validation & Helpers
+
   validate(options?: ValidationOptions): ValidationResult;
   clone(): this;
   merge(other: HALSONResource): this;
@@ -169,16 +160,16 @@ type FilterCallback<T> = (item: T, index: number, items: T[]) => unknown
 declare function createHALSONResource(data: string | object): HALSONResource;
 declare function createHALSONResource<T extends object>(data: string | T): HALSONResourceOf<T>;
 
-// Generic alias 
+// Generic alias
 type HALSONResourceOf<T extends object> = HALSONResource & T;
 
 // Create a namespace to export the generic type
 declare namespace createHALSONResource {
   export type HALSONResource<T extends object = object> = HALSONResourceOf<T>;
   export { IanaRels, HALResourceBuilder };
-  export type { 
-    IanaRel, 
-    HALSONLink, 
+  export type {
+    IanaRel,
+    HALSONLink,
     URITemplateVariables,
     PageMetadata,
     PagedResource,
