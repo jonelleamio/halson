@@ -1,5 +1,13 @@
 # Changelog
 
+## Release 3.1.0 (2025-08-19)
+ * Added generic TypeScript support with HALSONResource<T>
+ * Enhanced type definitions with generic function overloads
+ * Fixed type preservation in fluent method chains (addLink, addEmbed, etc.)
+ * Updated development dependencies (mocha ~11.7.1, chai ^5.3.1)
+ * Added comprehensive TypeScript documentation and usage examples
+ * Maintained 100% backward compatibility
+
 ## Release 3.0.0 (2017-06-05)
  * [BREAKING CHANGE] Not modifying input data (removed internal calling _compact function)
 
