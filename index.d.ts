@@ -4,10 +4,6 @@ interface HALSONLink {
 
 type HALSONResourceLinks = Partial<Record<string, HALSONLink | HALSONLink[]>>;
 
-type EmbeddedHALSONResources = Partial<Record<string, HALSONResource | HALSONResource[]>>;
-
-type FilterCallback<T> = (item: T, index: number, items: T[]) => unknown
-
 interface HALSONResource {
   className: 'HALSONResource';
   _links?: HALSONResourceLinks;
@@ -41,9 +37,24 @@ interface HALSONResource {
   removeEmbeds(rel: string, filterCallback?: FilterCallback<HALSONLink>): HALSONResource;
 }
 
+type EmbeddedHALSONResources = Partial<Record<string, HALSONResource | HALSONResource[]>>;
+
+type FilterCallback<T> = (item: T, index: number, items: T[]) => unknown
+
 declare function createHALSONResource(data: string | object): HALSONResource;
+declare function createHALSONResource<T extends object>(data: string | T): HALSONResourceOf<T>;
+
+// Generic alias 
+type HALSONResourceOf<T extends object> = HALSONResource & T;
+
+// Create a namespace to export the generic type
+declare namespace createHALSONResource {
+  export { HALSONResource };
+  export type HALSONResource<T extends object = object> = HALSONResourceOf<T>;
+}
 
 export = createHALSONResource;
+export as namespace halson;
 
 declare global {
   interface Window {
