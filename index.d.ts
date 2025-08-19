@@ -1,10 +1,110 @@
 interface HALSONLink {
   href: string;
+  rel?: string;           // Relation type
+  type?: string;          // Media type (e.g., 'application/json')
+  title?: string;         // Human-readable title
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'; // HTTP method
+  templated?: boolean;    // Whether href is a URI template
+  deprecation?: string;   // Deprecation notice URL
+  profile?: string;       // Link profile URL
+  hreflang?: string;      // Language of the linked resource
+  name?: string;          // Secondary key for selecting links
 }
 
 type HALSONResourceLinks = Partial<Record<string, HALSONLink | HALSONLink[]>>;
 
-interface HALSONResource {
+// IANA Link Relations (RFC 8288)
+declare const IanaRels: {
+  readonly SELF: 'self';
+  readonly EDIT: 'edit';
+  readonly DELETE: 'delete';
+  readonly NEXT: 'next';
+  readonly PREV: 'prev';
+  readonly PREVIOUS: 'previous';
+  readonly FIRST: 'first';
+  readonly LAST: 'last';
+  readonly RELATED: 'related';
+  readonly ALTERNATE: 'alternate';
+  readonly CANONICAL: 'canonical';
+  readonly COLLECTION: 'collection';
+  readonly ITEM: 'item';
+  readonly UP: 'up';
+  readonly HELP: 'help';
+  readonly ABOUT: 'about';
+  readonly BOOKMARK: 'bookmark';
+  readonly TAG: 'tag';
+  readonly SEARCH: 'search';
+};
+
+type IanaRel = 'self' | 'edit' | 'delete' | 'next' | 'prev' | 'previous' | 'first' | 'last' | 'related' | 'alternate' | 'canonical' | 'collection' | 'item' | 'up' | 'help' | 'about' | 'bookmark' | 'tag' | 'search';
+
+// URI Template expansion support
+interface URITemplateVariables {
+  [key: string]: string | number | boolean | null | undefined;
+}
+
+// Phase 3: Pagination Support
+interface PageMetadata {
+  number: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+type PagedResource<T extends object = object> = HALSONResourceOf<T> & {
+  page: PageMetadata;
+  hasNext(): boolean;
+  hasPrev(): boolean;
+  hasFirst(): boolean;
+  hasLast(): boolean;
+  next(): string | null;
+  prev(): string | null;
+  first(): string | null;
+  last(): string | null;
+};
+
+// Phase 3: Builder Pattern
+interface HALResourceBuilder<T extends object> {
+  link(rel: string, href: string): HALResourceBuilder<T>;
+  link(rel: string, link: HALSONLink): HALResourceBuilder<T>;
+  embed<U extends object>(rel: string, resource: HALSONResourceOf<U>): HALResourceBuilder<T>;
+  embed<U extends object>(rel: string, resources: HALSONResourceOf<U>[]): HALResourceBuilder<T>;
+  template(rel: string, template: string): HALResourceBuilder<T>;
+  curie(name: string, href: string, templated?: boolean): HALResourceBuilder<T>;
+  build(): HALSONResourceOf<T>;
+}
+
+declare function HALResourceBuilder<T extends object>(data: T): HALResourceBuilder<T>;
+
+// Phase 4: Curie Support (Compact URIs)
+interface CurieLink {
+  name: string;
+  href: string;
+  templated: boolean;
+}
+
+// Phase 4: Content Negotiation & Integration
+interface ContentNegotiation {
+  getContentType(): string;
+  accepts(mediaType: string): boolean;
+  asJson(): string;
+  asHal(): string;
+}
+
+// Phase 4: Validation Support
+interface ValidationOptions {
+  strict?: boolean;
+  allowMissingLinks?: string[];
+  requireLinks?: string[];
+}
+
+interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+interface HALSONResource extends ContentNegotiation {
   className: 'HALSONResource';
   _links?: HALSONResourceLinks;
   _embedded?: EmbeddedHALSONResources;
@@ -35,6 +135,31 @@ interface HALSONResource {
   ): this & {_embedded: EmbeddedHALSONResources};
   removeLinks(rel: string, filterCallback?: FilterCallback<HALSONLink>): this;
   removeEmbeds(rel: string, filterCallback?: FilterCallback<HALSONLink>): this;
+  
+  // Phase 1: Enhanced Link Support
+  hasLink(rel: string): boolean;
+  hasLinks(rel: string): boolean;
+  isTemplated(rel: string): boolean;
+  expandTemplate(rel: string, variables: URITemplateVariables): string;
+  addTemplate(rel: string, template: string, variables?: URITemplateVariables): this & {_links: HALSONResourceLinks};
+  
+  // Phase 2: Navigation & Traversal
+  follow<T extends object = object>(rel: string, fetchOptions?: RequestInit): Promise<HALSONResourceOf<T>>;
+  followAll<T extends object = object>(rel: string, fetchOptions?: RequestInit): Promise<HALSONResourceOf<T>[]>;
+  getHref(rel: string): string | null;
+  getAllHrefs(rel: string): string[];
+  resolve(rel: string, variables?: URITemplateVariables): string | null;
+  
+  // Phase 4: Curie Support
+  addCurie(curie: CurieLink): this;
+  addCurie(name: string, href: string, templated?: boolean): this;
+  getCuries(): CurieLink[];
+  expandCurie(rel: string): string;
+  
+  // Phase 4: Validation & Helpers
+  validate(options?: ValidationOptions): ValidationResult;
+  clone(): this;
+  merge(other: HALSONResource): this;
 }
 
 type EmbeddedHALSONResources = Partial<Record<string, HALSONResource | HALSONResource[]>>;
@@ -50,6 +175,18 @@ type HALSONResourceOf<T extends object> = HALSONResource & T;
 // Create a namespace to export the generic type
 declare namespace createHALSONResource {
   export type HALSONResource<T extends object = object> = HALSONResourceOf<T>;
+  export { IanaRels, HALResourceBuilder };
+  export type { 
+    IanaRel, 
+    HALSONLink, 
+    URITemplateVariables,
+    PageMetadata,
+    PagedResource,
+    CurieLink,
+    ContentNegotiation,
+    ValidationOptions,
+    ValidationResult
+  };
 }
 
 export = createHALSONResource;
