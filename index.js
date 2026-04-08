@@ -173,11 +173,6 @@
         return this;
     };
 
-    // ============================================================================
-    // NEW ENHANCED HATEOAS FEATURES
-    // ============================================================================
-
-    // Link utility methods
     HALSONResource.prototype.hasLink = function(rel) {
         return !!(this._links && (rel in this._links));
     };
@@ -197,7 +192,6 @@
         });
     };
 
-    // URI Template support
     HALSONResource.prototype.addTemplate = function(rel, template) {
         return this.addLink(rel, {
             href: template,
@@ -264,7 +258,6 @@
         return expanded;
     };
 
-    // Curie support
     HALSONResource.prototype.addCurie = function(name, href, templated) {
         if (!this._links) {
             this._links = {};
@@ -326,7 +319,6 @@
         });
     };
 
-    // Validation framework
     HALSONResource.prototype.validate = function(options) {
         options = options || {};
         var errors = [];
@@ -364,7 +356,6 @@
         };
     };
 
-    // Content negotiation
     HALSONResource.prototype.accepts = function(mediaType) {
         // Simple implementation - in real scenario would check Accept headers
         var supportedTypes = [
@@ -397,7 +388,6 @@
         return 'application/hal+json';
     };
 
-    // Navigation methods (async)
     HALSONResource.prototype.follow = function(rel, options) {
         var link = this.getLink(rel);
         if (!link) {
@@ -536,7 +526,6 @@
         DELETE: 'delete'
     };
 
-    // Builder Pattern
     function HALResourceBuilder(data) {
         this._resource = createHALSONResource(data || {});
     }
@@ -565,7 +554,6 @@
         return this._resource;
     };
 
-    // Pagination helpers for PagedResource
     function createPagedResource(data, pageMetadata) {
         var resource = createHALSONResource(data);
         
