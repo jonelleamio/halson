@@ -189,6 +189,25 @@ describe('halson enhanced features', function() {
         it('return undefined for missing rel', function() {
             assert.strictEqual(halson().expandTemplate('missing'), undefined);
         });
+
+        it('escape regex-special characters in variable keys', function() {
+            var res = halson().addTemplate('test', '/test/{a.b}');
+            var expanded = res.expandTemplate('test', {'a.b': 'val'});
+            assert.strictEqual(expanded, '/test/val');
+        });
+
+        it('do not match partial key via unescaped regex', function() {
+            var res = halson().addTemplate('test', '/test/{a.b}/{axb}');
+            // "a.b" unescaped would match "axb" too; with RegExp.escape it should not
+            var expanded = res.expandTemplate('test', {'a.b': 'one'});
+            assert.strictEqual(expanded, '/test/one/');
+        });
+
+        it('encode variable key in query output', function() {
+            var res = halson().addTemplate('test', '/test{?a+b}');
+            var expanded = res.expandTemplate('test', {'a+b': 'val'});
+            assert.strictEqual(expanded, '/test?a%2Bb=val');
+        });
     });
 
     describe('addCurie()', function() {

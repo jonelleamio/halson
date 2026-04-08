@@ -1,4 +1,8 @@
 (function(module, win) {
+    var escapeRegExp = typeof RegExp.escape === 'function'
+        ? RegExp.escape
+        : function(s) { return s.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&'); };
+
     function HALSONResource(data) {
         data = data || {};
 
@@ -247,9 +251,11 @@
         // Simple RFC 6570 Level 1 expansion
         Object.keys(variables).forEach(function(key) {
             var value = encodeURIComponent(variables[key]);
-            expanded = expanded.replace(new RegExp('\\{' + key + '\\}', 'g'), value);
-            expanded = expanded.replace(new RegExp('\\{\\?' + key + '(,[^}]*)?\\}', 'g'), '?' + key + '=' + value);
-            expanded = expanded.replace(new RegExp('\\{([^}]*,)?' + key + '(,[^}]*)?\\}', 'g'), key + '=' + value);
+            var escapedKey = escapeRegExp(key);
+            var encodedKey = encodeURIComponent(key);
+            expanded = expanded.replace(new RegExp('\\{' + escapedKey + '\\}', 'g'), value);
+            expanded = expanded.replace(new RegExp('\\{\\?' + escapedKey + '(,[^}]*)?\\}', 'g'), '?' + encodedKey + '=' + value);
+            expanded = expanded.replace(new RegExp('\\{([^}]*,)?' + escapedKey + '(,[^}]*)?\\}', 'g'), encodedKey + '=' + value);
         });
         
         // Remove unused template variables
