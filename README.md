@@ -4,7 +4,7 @@
 The [HAL+JSON](http://stateless.co/hal_specification.html) Resource Object with TypeScript support.
 
 ## Version
-3.1.0
+3.2.0
 
 ## Installation
 
