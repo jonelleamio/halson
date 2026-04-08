@@ -23,12 +23,16 @@
     {
       "name": "Martin Jurča",
       "email": "martin.jurca@firma.seznam.cz"
+    },
+    {
+      "name": "Jonelle Amio"
     }
   ],
   "license": "MIT",
   "devDependencies": {
-    "mocha": "~1.18.0",
-    "chai": "^1.9.1"
+    "chai": "^5.3.1",
+    "mocha": "~11.7.1",
+    "typescript": "^5.9.2"
   },
   "repository": {
     "type": "git",
