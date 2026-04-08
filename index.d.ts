@@ -120,7 +120,7 @@ interface HALSONResource extends ContentNegotiation {
     end?: number | undefined,
   ): I[];
   getEmbed<I, D>(rel: string, def: D): I | D;
-  getEmbed<I, D>(rel: string, filterCallback: FilterCallback<I>, def: D): I | D;
+  getEmbed<I, D>(rel: string, filterCallback: FilterCallback<I> | undefined, def: D): I | D;
   addLink(rel: string, link: string | HALSONLink): this & {_links: HALSONResourceLinks};
   addEmbed<I>(rel: string, embed: I | readonly I[]): this & {_embedded: EmbeddedHALSONResources};
   insertEmbed<I>(
